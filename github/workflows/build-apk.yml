@@ -1,5 +1,4 @@
 name: Build Weather Widget APK
-
 on:
   push:
     branches: [ main, master ]
