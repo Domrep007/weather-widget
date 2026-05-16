@@ -3,8 +3,6 @@ name: Build Weather Widget APK
 on:
   push:
     branches: [ main, master ]
-  pull_request:
-    branches: [ main, master ]
   workflow_dispatch:
 
 jobs:
@@ -12,23 +10,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout Code
+      uses: actions/checkout@v4
 
-    - name: Setup Flutter
+    - name: Setup Flutter SDK
       uses: subosito/flutter-action@v2
       with:
-        flutter-version: '3.13.0'
+        flutter-version: '3.16.0'
         channel: 'stable'
+        cache: true
+
+    - name: Flutter version check
+      run: flutter --version
 
     - name: Get Flutter dependencies
-      run:  flutter clean flutter pub get
+      run: flutter pub get
 
-    - name: Build APK Release
-      run: flutter build apk --release
+    - name: Analyze code
+      run: flutter analyze || true
 
-    - name: Upload APK as Artifact
+    - name: Build APK (Release)
+      run: flutter build apk --release --split-per-abi
+
+    - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
+      if: always()
       with:
         name: weather-widget-apk
-        path: build/app/outputs/flutter-apk/app-release.apk
+        path: build/app/outputs/flutter-apk/
         retention-days: 30
+        if-no-files-found: warn
